@@ -1,0 +1,789 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;800&display=swap');
+
+:root {
+  --font-title: 'Orbitron', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+
+  /* Color Palette */
+  --bg-dark: #0a0b0e;
+  --bg-panel: rgba(15, 18, 26, 0.75);
+  --border-light: rgba(255, 255, 255, 0.08);
+  
+  /* Naruto (Cyan Theme) */
+  --naruto-primary: #00f0ff;
+  --naruto-secondary: #00a8ff;
+  --naruto-glow: rgba(0, 240, 255, 0.4);
+  --naruto-accent: #ff8c00;
+
+  /* Sasuke (Purple Theme) */
+  --sasuke-primary: #c77dff;
+  --sasuke-secondary: #7b2cbf;
+  --sasuke-glow: rgba(199, 125, 255, 0.4);
+  --sasuke-accent: #e0aaff;
+
+  /* Neutrals */
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --gold: #ffd700;
+  --red: #ff4d4d;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-dark);
+  font-family: var(--font-body);
+  color: var(--text-main);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Base Fullscreen Canvas */
+#gameCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: block;
+}
+
+/* Glassmorphism Panel Template */
+.panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Screen Wrapper */
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* MAIN MENU SCREEN */
+#mainMenu {
+  background: radial-gradient(circle at center, rgba(19, 24, 38, 0.8) 0%, rgba(6, 7, 10, 0.95) 100%);
+  z-index: 11;
+}
+
+.title-container {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.title-glow {
+  font-family: var(--font-title);
+  font-size: 4rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--naruto-primary) 0%, var(--sasuke-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.3));
+  margin-bottom: 0.5rem;
+  animation: pulse-glow 3s infinite alternate;
+}
+
+.title-subtitle {
+  font-size: 1.1rem;
+  letter-spacing: 6px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 280px;
+}
+
+.btn {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(199, 125, 255, 0.15) 100%);
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+.btn-primary:hover {
+  border-color: var(--naruto-primary);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+}
+
+/* CHARACTER SELECT SCREEN */
+#charSelectScreen {
+  background: radial-gradient(circle at center, rgba(15, 18, 26, 0.85) 0%, rgba(5, 5, 8, 0.98) 100%);
+  z-index: 12;
+}
+
+.char-select-title {
+  font-family: var(--font-title);
+  font-size: 2.2rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.cards-container {
+  display: flex;
+  gap: 3rem;
+  width: 90%;
+  max-width: 960px;
+  justify-content: center;
+}
+
+.char-card {
+  flex: 1;
+  max-width: 380px;
+  height: 480px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  background: rgba(15, 18, 26, 0.5);
+}
+
+.char-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.char-card.naruto-card:hover {
+  border-color: var(--naruto-primary);
+  box-shadow: 0 0 30px var(--naruto-glow);
+}
+
+.char-card.sasuke-card:hover {
+  border-color: var(--sasuke-primary);
+  box-shadow: 0 0 30px var(--sasuke-glow);
+}
+
+.char-card .avatar-preview {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 2px dashed var(--border-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.char-card.naruto-card .avatar-preview {
+  border-color: rgba(0, 240, 255, 0.3);
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+}
+
+.char-card.sasuke-card .avatar-preview {
+  border-color: rgba(199, 125, 255, 0.3);
+  background: radial-gradient(circle, rgba(199, 125, 255, 0.1) 0%, transparent 70%);
+}
+
+/* Procedural Canvas Inside Card */
+.char-card canvas {
+  width: 130px;
+  height: 130px;
+}
+
+.char-name {
+  font-family: var(--font-title);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-top: 1rem;
+}
+
+.char-card.naruto-card .char-name {
+  color: var(--naruto-primary);
+}
+
+.char-card.sasuke-card .char-name {
+  color: var(--sasuke-primary);
+}
+
+.char-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0.75rem 0;
+  height: 60px;
+}
+
+.char-stats {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.stat-label {
+  color: var(--text-muted);
+}
+
+.stat-bar-bg {
+  width: 140px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  width: 0;
+  transition: width 1s ease-out;
+}
+
+.naruto-card .stat-bar-fill {
+  background: var(--naruto-primary);
+}
+
+.sasuke-card .stat-bar-fill {
+  background: var(--sasuke-primary);
+}
+
+.select-hint {
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 1.5rem;
+  transition: color 0.2s;
+}
+
+.char-card:hover .select-hint {
+  color: var(--text-main);
+}
+
+/* GAME SCREEN HUD OVERLAY */
+#hudOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+  display: none;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+#hudOverlay.active {
+  display: block;
+}
+
+/* Top HUD Bars */
+.hud-top-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.hud-panel {
+  pointer-events: auto;
+  padding: 1rem 1.5rem;
+  min-width: 250px;
+}
+
+.hud-bar-container {
+  margin-bottom: 0.75rem;
+}
+
+.hud-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-title);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.hud-bar-bg {
+  width: 100%;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hud-bar-fill {
+  height: 100%;
+  width: 100%;
+  transition: width 0.1s ease-out;
+}
+
+#healthBarFill {
+  background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
+  box-shadow: 0 0 10px rgba(255, 75, 43, 0.5);
+}
+
+#chakraBarFill {
+  background: linear-gradient(90deg, var(--naruto-secondary) 0%, var(--naruto-primary) 100%);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+/* Match the chakra bar color dynamically based on player */
+.player-sasuke #chakraBarFill {
+  background: linear-gradient(90deg, var(--sasuke-secondary) 0%, var(--sasuke-primary) 100%);
+  box-shadow: 0 0 10px rgba(199, 125, 255, 0.5);
+}
+
+.hud-stats-row {
+  display: flex;
+  gap: 1.5rem;
+  font-family: var(--font-title);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-main);
+  text-transform: uppercase;
+}
+
+.hud-stats-row span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.scroll-icon {
+  color: var(--gold);
+}
+
+.ammo-icon {
+  color: var(--text-muted);
+}
+
+/* Wave status panel right */
+.wave-status-panel {
+  text-align: right;
+  min-width: 180px;
+}
+
+.wave-label {
+  font-family: var(--font-title);
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--text-main);
+  text-transform: uppercase;
+}
+
+.enemies-left {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Dynamic Floating Combo Counter */
+.combo-container {
+  position: absolute;
+  left: 2rem;
+  top: 150px;
+  font-family: var(--font-title);
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.combo-container.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.combo-count {
+  font-size: 2.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--naruto-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+  line-height: 1;
+}
+
+.combo-label {
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  color: var(--text-main);
+  margin-top: 0.25rem;
+}
+
+/* Controls reminder (bottom left) */
+.controls-reminder {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
+}
+
+/* UPGRADE SHOP OVERLAY */
+#shopOverlay {
+  background: rgba(10, 11, 14, 0.85);
+  z-index: 20;
+}
+
+.shop-title {
+  font-family: var(--font-title);
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--naruto-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.shop-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.scroll-balance {
+  font-family: var(--font-title);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shop-grid {
+  display: flex;
+  gap: 1.5rem;
+  width: 90%;
+  max-width: 840px;
+  margin-bottom: 2.5rem;
+}
+
+.shop-item {
+  flex: 1;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.02);
+  height: 260px;
+  text-align: center;
+}
+
+.shop-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.shop-item-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.shop-item-name {
+  font-family: var(--font-title);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.shop-item-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  height: 36px;
+  line-height: 1.4;
+}
+
+.shop-item-level {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--naruto-primary);
+}
+
+.btn-buy {
+  font-family: var(--font-title);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  color: var(--gold);
+  width: 100%;
+}
+
+.btn-buy:hover {
+  background: var(--gold);
+  color: #000;
+  border-color: var(--gold);
+}
+
+.btn-buy:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-light);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.shop-actions {
+  width: 200px;
+}
+
+/* CINEMATIC VIDEO OVERLAY FOR ULTIMATE JUTSU */
+.ultimate-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
+  pointer-events: none;
+  display: none;
+  mix-blend-mode: screen;
+}
+
+.ultimate-overlay video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror just like webcam design */
+}
+
+/* Flash effect */
+#jutsuFlash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  z-index: 101;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+/* UI ANNOUNCEMENTS (Jutsu Name text banner overlay) */
+.announcement-container {
+  position: absolute;
+  top: 35%;
+  left: 0;
+  width: 100%;
+  z-index: 110;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.announcement-container.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.announcement-bg {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.8) 25%, rgba(0, 0, 0, 0.8) 75%, transparent 100%);
+  padding: 1.5rem 5rem;
+  width: 100%;
+  text-align: center;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.announcement-title {
+  font-family: var(--font-title);
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+  color: #fff;
+}
+
+.announcement-sub {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  letter-spacing: 8px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* GAME OVER / VICTORY SCREENS */
+.stats-summary {
+  margin: 1.5rem 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 260px;
+}
+
+.stats-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  border-bottom: 1px dashed var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.stats-summary-row .val {
+  font-weight: 700;
+}
+
+.color-victory {
+  background: linear-gradient(135deg, var(--gold) 0%, #ff8c00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+}
+
+.color-defeat {
+  background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(255, 75, 43, 0.3));
+}
+
+/* DYNAMIC ANIMATION CLASSES */
+.shake {
+  animation: screen-shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes screen-shake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(4px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+  40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+@keyframes pulse-glow {
+  0% {
+    filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.2)) drop-shadow(0 0 10px rgba(199, 125, 255, 0.2));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.45)) drop-shadow(0 0 25px rgba(199, 125, 255, 0.45));
+  }
+}
+
+/* Floating combat text wrapper (managed by JS, canvas-rendered, but text elements can use similar styling) */
+.damage-number {
+  position: absolute;
+  pointer-events: none;
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 1.5rem;
+  z-index: 6;
+  text-shadow: 0 0 5px #000;
+  animation: float-damage 0.8s ease-out forwards;
+}
+
+@keyframes float-damage {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.8);
+  }
+}

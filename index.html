@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ninja Battle: Chakra Showdown - A premium 2D action/fighting ninja browser game featuring Naruto and Sasuke with epic ultimate jutsu video cinematic blends, particle systems, and character upgrades.">
+  <title>Ninja Battle: Chakra Showdown</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="gameBody" class="player-naruto">
+
+  <!-- Core HTML5 Canvas -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Screens Container -->
+
+  <!-- 1. MAIN MENU -->
+  <div id="mainMenu" class="screen active">
+    <div class="title-container">
+      <h1 class="title-glow" id="mainTitle">Chakra Showdown</h1>
+      <div class="title-subtitle">Ninja Battle Arena</div>
+    </div>
+    
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btnPlay">Enter Arena</button>
+      <button class="btn" id="btnHighScores">High Scores</button>
+      <button class="btn" id="btnHowToPlay">Controls</button>
+    </div>
+  </div>
+
+  <!-- 2. CHARACTER SELECTION -->
+  <div id="charSelectScreen" class="screen">
+    <h2 class="char-select-title">Choose Your Shinobi</h2>
+    
+    <div class="cards-container">
+      <!-- Naruto Card -->
+      <div class="char-card panel naruto-card" id="cardNaruto" data-char="naruto">
+        <div class="avatar-preview">
+          <canvas id="narutoPreviewCanvas" width="130" height="130"></canvas>
+        </div>
+        <div class="char-name">Naruto Uzumaki</div>
+        <p class="char-desc">Wind affinity. Quick combat speed, fast chakra recovery, and devastating Shadow Clones.</p>
+        
+        <div class="char-stats">
+          <div class="stat-row">
+            <span class="stat-label">Health</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 70%;"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Chakra Recovery</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 90%;"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Special Jutsu</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 80%;"></div></div>
+          </div>
+        </div>
+        <div class="select-hint" id="narutoSelectHint">Unleash Rasengan</div>
+      </div>
+
+      <!-- Sasuke Card -->
+      <div class="char-card panel sasuke-card" id="cardSasuke" data-char="sasuke">
+        <div class="avatar-preview">
+          <canvas id="sasukePreviewCanvas" width="130" height="130"></canvas>
+        </div>
+        <div class="char-name">Sasuke Uchiha</div>
+        <p class="char-desc">Lightning affinity. High attack damage, deadly shurikens, and impenetrable Sharingan defense.</p>
+        
+        <div class="char-stats">
+          <div class="stat-row">
+            <span class="stat-label">Health</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 85%;"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Chakra Recovery</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 60%;"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Special Jutsu</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 95%;"></div></div>
+          </div>
+        </div>
+        <div class="select-hint" id="sasukeSelectHint">Unleash Chidori</div>
+      </div>
+    </div>
+
+    <button class="btn" id="btnBackToMenu" style="margin-top: 3rem; width: 200px;">Back</button>
+  </div>
+
+  <!-- 3. IN-GAME HUD OVERLAY -->
+  <div id="hudOverlay">
+    <div class="hud-top-container">
+      <!-- Left HUD Panel: Health & Chakra -->
+      <div class="hud-panel panel">
+        <div class="hud-bar-container">
+          <div class="hud-bar-label">
+            <span>Life</span>
+            <span id="healthValue">100 / 100</span>
+          </div>
+          <div class="hud-bar-bg">
+            <div class="hud-bar-fill" id="healthBarFill" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="hud-bar-container">
+          <div class="hud-bar-label">
+            <span>Chakra</span>
+            <span id="chakraValue">0 / 100</span>
+          </div>
+          <div class="hud-bar-bg">
+            <div class="hud-bar-fill" id="chakraBarFill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="hud-stats-row">
+          <span><i class="scroll-icon">📜</i> <span id="hudScrollCount">0</span></span>
+          <span><i class="ammo-icon">☄️</i> <span id="hudAmmoCount">10</span></span>
+        </div>
+      </div>
+
+      <!-- Right HUD Panel: Wave Stats -->
+      <div class="wave-status-panel panel">
+        <div class="wave-label" id="hudWaveNum">Wave 1</div>
+        <div class="enemies-left" id="hudEnemiesRemaining">Ninjas Remaining: 5</div>
+      </div>
+    </div>
+
+    <!-- Floating Combo Indicator -->
+    <div class="combo-container" id="comboContainer">
+      <div class="combo-count" id="comboCount">0 HITS</div>
+      <div class="combo-label">Awesome Combo!</div>
+    </div>
+
+    <!-- Controls reminder in battle -->
+    <div class="controls-reminder">
+      WASD: Move | Click/J: Melee | RightClick/K: Shuriken | Space/L: Dash | Hold R: Charge Chakra | Q/I: ULTIMATE JUTSU (100% Chakra)
+    </div>
+  </div>
+
+  <!-- 4. UPGRADE SHOP (Shown between waves) -->
+  <div id="shopOverlay" class="screen">
+    <h2 class="shop-title">Chakra Training Academy</h2>
+    <p class="shop-subtitle">Refine your skills and build chakra before the next wave</p>
+    
+    <div class="scroll-balance">
+      <span>📜 Available Scrolls:</span>
+      <span id="shopScrollBalance">0</span>
+    </div>
+
+    <div class="shop-grid">
+      <!-- Shop Item 1: Max Health -->
+      <div class="shop-item panel" id="shopItemHp">
+        <div class="shop-item-icon">❤️</div>
+        <div class="shop-item-name">Ninja Vitality</div>
+        <div class="shop-item-desc">Increases maximum health pool by 20. Restores health on buy.</div>
+        <div class="shop-item-level" id="shopHpLevel">Level 1</div>
+        <button class="btn-buy" id="btnBuyHp" data-cost="5">📜 5 Scrolls</button>
+      </div>
+
+      <!-- Shop Item 2: Max Chakra -->
+      <div class="shop-item panel" id="shopItemChakra">
+        <div class="shop-item-icon">🌀</div>
+        <div class="shop-item-name">Chakra Reservoir</div>
+        <div class="shop-item-desc">Increases maximum chakra storage. Enables faster ultimate cycles.</div>
+        <div class="shop-item-level" id="shopChakraLevel">Level 1</div>
+        <button class="btn-buy" id="btnBuyChakra" data-cost="8">📜 8 Scrolls</button>
+      </div>
+
+      <!-- Shop Item 3: Attack Power -->
+      <div class="shop-item panel" id="shopItemDamage">
+        <div class="shop-item-icon">⚔️</div>
+        <div class="shop-item-name">Taijutsu Strength</div>
+        <div class="shop-item-desc">Increases damage dealt by physical strikes and shurikens.</div>
+        <div class="shop-item-level" id="shopDamageLevel">Level 1</div>
+        <button class="btn-buy" id="btnBuyDamage" data-cost="6">📜 6 Scrolls</button>
+      </div>
+
+      <!-- Shop Item 4: Chakra Charge Speed -->
+      <div class="shop-item panel" id="shopItemRegen">
+        <div class="shop-item-icon">🔥</div>
+        <div class="shop-item-name">Chakra Control</div>
+        <div class="shop-item-desc">Speeds up active Chakra charging rate by 25%.</div>
+        <div class="shop-item-level" id="shopRegenLevel">Level 1</div>
+        <button class="btn-buy" id="btnBuyRegen" data-cost="5">📜 5 Scrolls</button>
+      </div>
+    </div>
+
+    <div class="shop-actions">
+      <button class="btn btn-primary" id="btnNextWave" style="width: 100%;">Start Next Wave</button>
+    </div>
+  </div>
+
+  <!-- 5. GAME OVER / DEFEAT SCREEN -->
+  <div id="gameOverScreen" class="screen">
+    <h2 class="title-glow color-defeat">Defeated</h2>
+    <p class="title-subtitle">Your chakra has faded</p>
+    
+    <div class="stats-summary panel">
+      <div class="stats-summary-row">
+        <span class="lbl">Waves Cleared</span>
+        <span class="val" id="goWaves">0</span>
+      </div>
+      <div class="stats-summary-row">
+        <span class="lbl">Rogue Ninjas Slain</span>
+        <span class="val" id="goKills">0</span>
+      </div>
+      <div class="stats-summary-row">
+        <span class="lbl">Scrolls Collected</span>
+        <span class="val" id="goScrolls">0</span>
+      </div>
+      <div class="stats-summary-row">
+        <span class="lbl">Personal High Score</span>
+        <span class="val" id="goHighScore">0</span>
+      </div>
+    </div>
+
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btnRetry">Try Again</button>
+      <button class="btn" id="btnExitToMenu">Main Menu</button>
+    </div>
+  </div>
+
+  <!-- 6. VICTORY SCREEN -->
+  <div id="victoryScreen" class="screen">
+    <h2 class="title-glow color-victory">Chakra Mastery</h2>
+    <p class="title-subtitle">You have conquered the showdown</p>
+    
+    <div class="stats-summary panel">
+      <div class="stats-summary-row">
+        <span class="lbl">Waves Cleared</span>
+        <span class="val" id="vicWaves">10</span>
+      </div>
+      <div class="stats-summary-row">
+        <span class="lbl">Rogue Ninjas Slain</span>
+        <span class="val" id="vicKills">0</span>
+      </div>
+      <div class="stats-summary-row">
+        <span class="lbl">Personal High Score</span>
+        <span class="val" id="vicHighScore">0</span>
+      </div>
+    </div>
+
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btnVictoryRetry">Play Again</button>
+      <button class="btn" id="btnVictoryExit">Main Menu</button>
+    </div>
+  </div>
+
+  <!-- 7. HOW TO PLAY DIALOG -->
+  <div id="howToPlayScreen" class="screen" style="background: rgba(10, 11, 14, 0.95); z-index: 15;">
+    <h2 class="char-select-title">Ninja Control Arts</h2>
+    <div class="panel" style="padding: 2.5rem 3rem; max-width: 600px; width: 90%; line-height: 1.6; font-size: 0.95rem;">
+      <h3 style="margin-bottom: 1rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;">Movement & Basic Arts</h3>
+      <p style="margin-bottom: 1rem;">Move your shinobi around the arena using the <strong>W, A, S, D</strong> keys (or <strong>Arrow Keys</strong>).</p>
+      
+      <h3 style="margin-bottom: 1rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;">Combat & Jutsu</h3>
+      <ul style="margin-bottom: 1.5rem; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <li><strong>Left Click / J</strong>: Basic melee combo strikes (charges 1% Chakra on hit).</li>
+        <li><strong>Right Click / K</strong>: Throw Shurikens. Uses ammo (shurikens regenerate over time).</li>
+        <li><strong>Spacebar / L</strong>: Chakra Dash (quick invincibility frames to dodge enemy blows).</li>
+        <li><strong>Hold R / O</strong>: Charge your Chakra gauge (you remain stationary and vulnerable).</li>
+        <li><strong>Q / I</strong>: <strong>ULTIMATE JUTSU!</strong> Unleashes an screen-clearing strike when your Chakra meter is at 100%.</li>
+      </ul>
+
+      <h3 style="margin-bottom: 1rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;">Scroll Upgrades</h3>
+      <p style="margin-bottom: 1rem;">Defeated enemies drop scrolls. Collect scrolls during waves to purchase training stats at the training academy between waves.</p>
+    </div>
+    <button class="btn" id="btnBackFromHowTo" style="margin-top: 2rem; width: 180px;">Back</button>
+  </div>
+
+  <!-- 8. HIGH SCORE DIALOG -->
+  <div id="highScoreScreen" class="screen" style="background: rgba(10, 11, 14, 0.95); z-index: 15;">
+    <h2 class="char-select-title">Shinobi Hall of Fame</h2>
+    <div class="panel" style="padding: 2.5rem 3rem; max-width: 450px; width: 90%; text-align: center;">
+      <div style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem;">All-Time High Score</div>
+      <div id="highScoreValue" style="font-family: var(--font-title); font-size: 3rem; font-weight: 900; color: var(--gold); text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); margin-bottom: 1.5rem;">0</div>
+      <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">Can you rise above the ranks and become the ultimate Kage? Fight rogue ninjas to increase your score!</div>
+    </div>
+    <button class="btn" id="btnBackFromHighScores" style="margin-top: 2rem; width: 180px;">Back</button>
+  </div>
+
+  <!-- SCREEN BLENDING ULTIMATE EFFECTS -->
+  <!-- We pull in your local video files and mirror/screen blend them just like your sudha.html camera app -->
+  <div id="narutoUltimateVideo" class="ultimate-overlay">
+    <video id="vidNaruto" src="./naruto.mp4" muted></video>
+  </div>
+  <div id="sasukeUltimateVideo" class="ultimate-overlay">
+    <video id="vidSasuke" src="./sasuke.mp4" muted></video>
+  </div>
+  <div id="mergeUltimateVideo" class="ultimate-overlay">
+    <video id="vidMerge" src="./merge.mp4" muted></video>
+  </div>
+
+  <!-- White Screen Flash Overlay -->
+  <div id="jutsuFlash"></div>
+
+  <!-- Jutsu Announcement Title Banner -->
+  <div class="announcement-container" id="jutsuAnnouncement">
+    <div class="announcement-bg">
+      <div class="announcement-title" id="announcementText">RASENGAN</div>
+      <div class="announcement-sub" id="announcementSubText">Secret Ultimate Jutsu</div>
+    </div>
+  </div>
+
+  <!-- Game Script -->
+  <script src="game.js"></script>
+</body>
+</html>

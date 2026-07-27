@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naruto + Sasuke Merge</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+<style>
+body { margin:0; overflow:hidden; background:black; }
+
+#v_src, #out {
+  position:absolute;
+  width:100vw; height:100vh;
+  object-fit:cover;
+  transform:scaleX(-1);
+}
+
+#out { z-index:2; pointer-events:none; }
+
+.darkness {
+  position:absolute;
+  width:100vw; height:100vh;
+  background:rgba(0,0,0,0.3);
+  mix-blend-mode:multiply;
+  z-index:5;
+}
+
+.fx {
+  position:absolute;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  display:none;
+  mix-blend-mode:screen;
+  z-index:20;
+}
+
+#n { width:500px; }
+#s { width:600px; }
+#m { width:900px; }
+</style>
+</head>
+
+<body>
+
+<video id="v_src" autoplay playsinline></video>
+<canvas id="out"></canvas>
+<div class="darkness"></div>
+
+<!-- Effects -->
+<video id="n" class="fx" src="./naruto.mp4" muted loop></video>
+<video id="s" class="fx" src="./sasuke.mp4" muted loop></video>
+<video id="m" class="fx" src="./merge.mp4" muted loop></video>
+
+<script>
+const v = document.getElementById('v_src');
+const c = document.getElementById('out');
+const ctx = c.getContext('2d');
+
+const n = document.getElementById('n');
+const s = document.getElementById('s');
+const m = document.getElementById('m');
+
+let pwr = [0,0];
+
+// Detect open hand
+function checkOpen(pts){
+  let open = 0;
+  const tips=[8,12,16,20];
+  const bases=[5,9,13,17];
+
+  for(let i=0;i<4;i++){
+    if(pts[tips[i]].y < pts[bases[i]].y) open++;
+  }
+  return open>=3;
+}
+
+function onResults(res){
+  c.width = v.videoWidth;
+  c.height = v.videoHeight;
+
+  ctx.clearRect(0,0,c.width,c.height);
+
+  let leftHand = null;
+  let rightHand = null;
+
+  n.style.display='none';
+  s.style.display='none';
+  m.style.display='none';
+
+  if(res.multiHandLandmarks && res.multiHandedness){
+
+    res.multiHandLandmarks.forEach((pts,i)=>{
+
+      const label = res.multiHandedness[i].label;
+      const isRight = label==="Right";
+      const idx = isRight?1:0;
+
+      // store hands
+      if(isRight) rightHand = pts;
+      else leftHand = pts;
+
+      // glow skeleton
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = isRight ? "purple" : "cyan";
+
+      drawConnectors(ctx, pts, HAND_CONNECTIONS, {
+        color: isRight ? "#c77dff" : "#00eaff",
+        lineWidth:3
+      });
+
+      drawLandmarks(ctx, pts, {color:"#fff", radius:2});
+
+      const open = checkOpen(pts);
+
+      // smooth power
+      pwr[idx] += open ? 0.1 : -0.05;
+      pwr[idx] = Math.max(0, Math.min(1, pwr[idx]));
+
+      const wrist = pts[0];
+      const knk = pts[9];
+
+      const tx = (wrist.x + knk.x)/2;
+      const ty = (wrist.y + knk.y)/2;
+
+      const px = (1-tx)*window.innerWidth;
+      const py = ty*window.innerHeight;
+
+      if(pwr[idx] > 0.05){
+
+        if(isRight){
+          s.style.display='block';
+          s.style.left=`${px}px`;
+          s.style.top=`${py}px`;
+          s.style.opacity=pwr[idx];
+          s.style.filter="drop-shadow(0 0 40px purple)";
+          s.play();
+        }else{
+          n.style.display='block';
+          n.style.left=`${px}px`;
+          n.style.top=`${py}px`;
+          n.style.opacity=pwr[idx];
+          n.style.filter="drop-shadow(0 0 40px cyan)";
+          n.play();
+        }
+      }
+    });
+
+    // 🔥 MERGE WHEN HANDS COME CLOSE
+    if(leftHand && rightHand){
+
+      const h1 = leftHand[0];
+      const h2 = rightHand[0];
+
+      const dist = Math.hypot(h1.x - h2.x, h1.y - h2.y);
+
+      const threshold = 0.13;
+
+      if(dist < threshold){
+
+        const cx = (h1.x + h2.x)/2;
+        const cy = (h1.y + h2.y)/2;
+
+        const px = (1-cx)*window.innerWidth;
+        const py = cy*window.innerHeight;
+
+        // hide individual
+        n.style.display='none';
+        s.style.display='none';
+
+        // show merged
+        m.style.display='block';
+        m.style.left=`${px}px`;
+        m.style.top=`${py}px`;
+        m.style.opacity=1;
+
+        m.style.filter="drop-shadow(0 0 80px cyan) drop-shadow(0 0 80px purple)";
+
+        // pulse animation
+        m.style.transform =
+          `translate(-50%,-50%) scale(${1 + Math.sin(Date.now()*0.02)*0.15})`;
+
+        m.play();
+      }
+    }
+  }
+}
+
+// MediaPipe setup
+const hands = new Hands({
+  locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+
+hands.setOptions({
+  maxNumHands:2,
+  modelComplexity:1,
+  minDetectionConfidence:0.7,
+  minTrackingConfidence:0.7
+});
+
+hands.onResults(onResults);
+
+const cam = new Camera(v,{
+  onFrame: async()=>{ await hands.send({image:v}); },
+  width:1280,
+  height:720
+});
+
+cam.start();
+</script>
+
+</body>
+</html>
